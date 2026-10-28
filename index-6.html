@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>MONSTER TYPE — ICT Open Day 2026</title>
+<style>
+:root{
+  --navy:#101426;--purple:#6C3BFF;--blue:#168BFF;--green:#7CFC00;
+  --white:#fff;--muted:#b8bfd8;--card:#171d34;--danger:#ff5577;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:radial-gradient(circle at 20% 10%,#29205d 0,#101426 42%,#080b16 100%);color:var(--white);min-height:100vh;overflow-x:hidden}
+button,input,select{font:inherit}
+button{border:0;border-radius:14px;padding:13px 18px;font-weight:800;cursor:pointer}
+.primary{background:linear-gradient(135deg,var(--purple),var(--blue));color:white}
+.green{background:var(--green);color:#101426}
+.secondary{background:#252c49;color:white;border:1px solid #3a4265}
+.danger{background:var(--danger);color:white}
+button:disabled{opacity:.45;cursor:not-allowed}
+.top{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid #303750;background:#0c1020e8;position:sticky;top:0;z-index:10}
+.logo{font-size:24px;font-weight:1000;letter-spacing:1px}.logo span{color:var(--green)}
+.status{font-size:12px;color:var(--muted)}
+.page{max-width:1100px;margin:auto;padding:24px 16px 50px}
+.card{background:#171d34e8;border:1px solid #323a5b;border-radius:22px;padding:22px;box-shadow:0 15px 45px #0005;margin-bottom:18px}
+.hero{text-align:center;padding:38px 20px}.hero h1{font-size:clamp(42px,10vw,82px);margin:0 0 8px}.hero h1 span{color:var(--green)}.hero p{color:var(--muted);font-size:17px}
+.monsters{font-size:54px;animation:float 2.8s ease-in-out infinite}.m2{animation-delay:.5s}.m3{animation-delay:1s}
+@keyframes float{50%{transform:translateY(-10px) rotate(3deg)}}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+h2{margin-top:0} label{display:block;color:var(--muted);font-size:13px;margin:10px 0 6px}
+input{width:100%;padding:13px;border-radius:12px;border:1px solid #3b4468;background:#0e1325;color:#fff;outline:none}
+input:focus{border-color:var(--blue)}
+.center{text-align:center}.hidden{display:none!important}
+.notice{padding:12px;border-radius:12px;background:#10162a;border:1px solid #343d60;color:var(--muted);margin:10px 0}
+.bigcode{font-size:42px;letter-spacing:8px;color:var(--green);font-weight:1000;text-align:center}
+.players{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.player{padding:12px;background:#0f1528;border:1px solid #303858;border-radius:14px}
+.badge{display:inline-block;padding:4px 8px;border-radius:20px;background:#283253;color:#dce3ff;font-size:11px}
+.timer{font-size:62px;font-weight:1000;text-align:center;color:var(--green);font-variant-numeric:tabular-nums}
+.passage{line-height:1.8;font-size:18px;background:#0c1120;border-radius:16px;padding:18px;border:1px solid #343d60}
+textarea{width:100%;min-height:180px;background:#0a0f1d;color:#fff;border:2px solid #394466;border-radius:16px;padding:16px;font-size:18px;line-height:1.6;resize:vertical}
+textarea:focus{border-color:var(--blue);outline:none}
+.kpi{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}.kpi div{padding:12px 18px;background:#10162a;border-radius:14px;border:1px solid #343d60}
+table{width:100%;border-collapse:collapse}th,td{padding:10px;border-bottom:1px solid #303750;text-align:left}th{color:var(--green)}
+video{width:100%;max-height:55vh;border-radius:16px;background:#000}
+.small{font-size:12px;color:var(--muted)}
+.winner{font-size:24px;padding:14px;border-radius:16px;background:linear-gradient(135deg,#38206f,#11365f);margin:10px 0}
+footer{text-align:center;color:#747d9c;font-size:12px;margin-top:30px}
+@media(max-width:650px){.players{grid-template-columns:1fr 1fr}.timer{font-size:48px}.top{position:static}}
+</style>
+</head>
+<body>
+<div class="top"><div class="logo">👾 MONSTER <span>TYPE</span></div><div id="conn" class="status">Connecting to Firebase…</div></div>
+<div class="page">
+
+<section id="home" class="screen">
+  <div class="card hero">
+    <div class="monsters">👾 <span class="m2">👹</span> <span class="m3">👻</span></div>
+    <h1>MONSTER <span>TYPE</span></h1>
+    <p>Matara Technical College • ICT Course 2026 • 2nd Batch</p>
+    <p class="small">3-minute live typing challenge • 6 players per round</p>
+    <div class="grid" style="margin-top:24px">
+      <button class="primary" onclick="show('join')">🎮 JOIN GAME</button>
+      <button class="secondary" onclick="show('adminLogin')">👑 ADMIN</button>
+    </div>
+  </div>
+</section>
+
+<section id="join" class="screen hidden">
+ <div class="card">
+  <h2>🎮 Join Monster Type</h2>
+  <label>Your name</label><input id="playerName" maxlength="30" placeholder="Enter your name">
+  <label>Room code</label><input id="joinCode" maxlength="6" placeholder="e.g. MT26" style="text-transform:uppercase">
+  <button class="primary" style="width:100%;margin-top:14px" onclick="joinRoom()">JOIN ROOM</button>
+  <button class="secondary" style="width:100%;margin-top:8px" onclick="show('home')">BACK</button>
+  <div id="joinMsg" class="notice hidden"></div>
+ </div>
+</section>
+
+<section id="studentWait" class="screen hidden">
+ <div class="card center">
+  <h2>👾 You're in!</h2><div class="bigcode" id="studentCode">----</div>
+  <p id="studentWaitText">Waiting for the Admin to start…</p>
+  <div id="studentVideoNotice" class="notice">The introduction video is shown on the Admin screen.</div>
+  <div class="monsters">👾 👹 👻</div>
+ </div>
+</section>
+
+<section id="studentGame" class="screen hidden">
+ <div class="card">
+  <div class="timer" id="timer">03:00</div>
+  <div class="passage" id="passage"></div>
+  <label>Type the passage here</label>
+  <textarea id="typingBox" spellcheck="false" autocomplete="off" autocapitalize="none"></textarea>
+  <div class="kpi" style="margin-top:12px"><div>WPM <b id="liveWpm">0</b></div><div>Accuracy <b id="liveAcc">100%</b></div></div>
+ </div>
+</section>
+
+<section id="studentDone" class="screen hidden">
+ <div class="card center"><div class="monsters">🏆 👾 🏆</div><h2>Round Complete!</h2>
+ <p>Your result has been sent to the Admin.</p><div class="notice">Please wait for the winner announcement.</div></div>
+</section>
+
+<section id="adminLogin" class="screen hidden">
+ <div class="card" style="max-width:480px;margin:auto">
+  <h2>👑 Admin Login</h2>
+  <label>Password</label><input id="adminPass" type="password" placeholder="Admin password">
+  <button class="primary" style="width:100%;margin-top:14px" onclick="adminLogin()">ENTER ADMIN PANEL</button>
+  <button class="secondary" style="width:100%;margin-top:8px" onclick="show('home')">BACK</button>
+  <div class="small" style="margin-top:12px">Demo password: <b>admin123</b> — change it in the HTML before the event.</div>
+ </div>
+</section>
+
+<section id="admin" class="screen hidden">
+ <div class="card">
+  <h2>👑 Admin Control</h2>
+  <div class="grid">
+   <div><label>Room code</label><div class="bigcode" id="adminCode">----</div></div>
+   <div><label>Round</label><div style="font-size:30px;font-weight:900" id="roundNo">1</div></div>
+  </div>
+  <div class="grid" style="margin-top:12px">
+   <button class="primary" onclick="createRoom()">➕ CREATE ROOM</button>
+   <button class="secondary" onclick="copyRoom()">📋 COPY ROOM CODE</button>
+   <button class="secondary" onclick="document.getElementById('videoFile').click()">🎬 SELECT INTRO VIDEO</button>
+   <button class="danger" onclick="resetRoom()">♻️ RESET ROOM</button>
+  </div>
+  <input id="videoFile" type="file" accept="video/*" class="hidden" onchange="loadVideo(event)">
+  <div id="adminMsg" class="notice">Create a room to begin.</div>
+ </div>
+
+ <div class="card">
+  <h2>🎬 Admin-only Introduction</h2>
+  <video id="introVideo" controls class="hidden"></video>
+  <div id="videoEmpty" class="notice">Select your long introduction/advertisement video from this Admin device. It is not sent to student devices.</div>
+  <div class="grid">
+   <button class="secondary" id="playIntroBtn" onclick="playIntro()" disabled>▶️ PLAY INTRO</button>
+   <button class="green" id="startBtn" onclick="startRound()" disabled>🚀 FINISH VIDEO / START 3-MIN ROUND</button>
+  </div>
+ </div>
+
+ <div class="card">
+  <h2>👥 Players <span id="playerCount">(0/6)</span></h2>
+  <div id="players" class="players"></div>
+ </div>
+
+ <div class="card">
+  <h2>🏆 Results</h2>
+  <div id="results">Results will appear here after the timer reaches 00:00.</div>
+  <div class="grid" style="margin-top:12px">
+   <button class="primary" id="revealBtn" onclick="revealWinners()" disabled>📺 REVEAL WINNERS ON SMART BOARD</button>
+   <button class="secondary" onclick="nextGroup()">🔄 NEXT GROUP</button>
+  </div>
+ </div>
+</section>
+
+<section id="winner" class="screen hidden">
+ <div class="card center">
+  <div class="monsters">🏆 👾 🏆</div><h1>MONSTER TYPE</h1><h2>🏆 WINNERS</h2>
+  <div id="winnerList"></div>
+  <button class="primary" onclick="show('admin')">BACK TO ADMIN</button>
+ </div>
+</section>
+
+<footer>MONSTER TYPE • Matara Technical College ICT 2026 2nd Batch</footer>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+<script>
+const firebaseConfig={
+ apiKey:"AIzaSyBAVChly9Rpmo_WEoni_3srEbReJ97Q4",
+ authDomain:"typing-app-7f51a.firebaseapp.com",
+ databaseURL:"https://typing-app-7f51a-default-rtdb.firebaseio.com",
+ projectId:"typing-app-7f51a",
+ storageBucket:"typing-app-7f51a.firebasestorage.app",
+ messagingSenderId:"880287958242",
+ appId:"1:880287958242:web:4f170cddf1f94f9b920abb",
+ measurementId:"G-GV9TN2TSCD"
+};
+let app,db,user=null,roomCode="",role="",playerId="",roomRef=null,roomListener=null;
+let roomData=null,roundFinished=false,localStart=0,timerInt=null;
+const PASSAGES=[
+"Typing is an important digital skill. Practice makes your fingers faster, your accuracy better, and your confidence stronger. Keep calm, read carefully, and type every word correctly.",
+"Technology connects people, ideas, and opportunities. Good typing skills help students work faster, communicate clearly, and use computers with confidence in school and everyday life."
+];
+
+function $(id){return document.getElementById(id)}
+function show(id){document.querySelectorAll('.screen').forEach(x=>x.classList.add('hidden'));$(id).classList.remove('hidden')}
+function msg(id,t){$(id).textContent=t;$(id).classList.remove('hidden')}
+function setConn(t,ok=false){$('conn').textContent=t;$('conn').style.color=ok?'#7CFC00':'#b8bfd8'}
+
+try{
+ app=firebase.initializeApp(firebaseConfig); db=firebase.database();
+ firebase.auth().onAuthStateChanged(u=>{user=u;if(u)setConn("Firebase connected ✓",true)});
+ firebase.auth().signInAnonymously().catch(e=>setConn("Firebase auth error"));
+}catch(e){setConn("Firebase not loaded")}
+
+function randomCode(){
+ const chars="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";let s="";
+ for(let i=0;i<4;i++)s+=chars[Math.floor(Math.random()*chars.length)];
+ return s;
+}
+async function createRoom(){
+ if(!user){msg('adminMsg','Wait a moment for Firebase to connect.');return}
+ roomCode=randomCode(); role='admin'; roundFinished=false;
+ roomRef=db.ref("rooms/"+roomCode);
+ await roomRef.set({code:roomCode,status:"waiting",round:1,passage:"",startedAt:0,createdAt:Date.now(),players:{}});
+ $('adminCode').textContent=roomCode;$('roundNo').textContent="1";
+ $('startBtn').disabled=true;$('revealBtn').disabled=true;
+ msg('adminMsg',"Room created. Give this code to up to 6 students.");
+ listenRoom(); renderPlayers({});
+}
+function listenRoom(){
+ if(roomListener&&roomRef)roomRef.off('value',roomListener);
+ roomListener=snap=>{roomData=snap.val()||{};handleRoomUpdate()};
+ roomRef.on('value',roomListener);
+}
+function handleRoomUpdate(){
+ if(role==='admin'){renderPlayers(roomData.players||{}); updateAdminButtons(); if(roomData.status==='finished') renderResults(roomData.players||{});}
+ if(role==='student'){
+   $('studentCode').textContent=roomCode;
+   if(roomData.status==='waiting') {show('studentWait');$('studentWaitText').textContent="Waiting for the Admin to start…";}
+   if(roomData.status==='playing') beginStudentRound(roomData);
+   if(roomData.status==='finished') finishStudent();
+   if(roomData.status==='revealed') finishStudent();
+ }
+}
+function renderPlayers(players){
+ const arr=Object.values(players||{});
+ $('playerCount').textContent="("+arr.length+"/6)";
+ $('players').innerHTML=arr.length?arr.map((p,i)=>`<div class="player"><b>${i+1}. ${esc(p.name)}</b><br><span class="badge">${p.status||'joined'}</span></div>`).join(''):"<div class='notice'>No players yet.</div>";
+ updateAdminButtons();
+}
+function updateAdminButtons(){
+ const n=Object.keys(roomData?.players||{}).length;
+ $('startBtn').disabled=!(roomData?.status==='waiting'&&n>=1&&n<=6);
+ $('revealBtn').disabled=roomData?.status!=='finished';
+}
+function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+
+async function joinRoom(){
+ if(!user){msg('joinMsg','Firebase is still connecting. Wait a few seconds.');return}
+ const name=$('playerName').value.trim(), code=$('joinCode').value.trim().toUpperCase();
+ if(!name||!code){msg('joinMsg','Enter your name and room code.');return}
+ const ref=db.ref("rooms/"+code); const snap=await ref.get();
+ if(!snap.exists()){msg('joinMsg','Room not found. Check the code.');return}
+ const r=snap.val();
+ if(r.status!=="waiting"){msg('joinMsg','This round has already started. Ask the Admin for the next group.');return}
+ const players=r.players||{};
+ if(Object.keys(players).length>=6){msg('joinMsg','This room already has 6 players.');return}
+ playerId=user.uid;
+ roomCode=code; role='student'; roomRef=ref;
+ await ref.child("players/"+playerId).set({name,uid:playerId,status:"joined",joinedAt:Date.now(),wpm:0,accuracy:0,errors:0,correctChars:0});
+ $('studentCode').textContent=roomCode; show('studentWait'); listenRoom();
+}
+function startRound(){
+ if(!roomRef||Object.keys(roomData?.players||{}).length<1)return;
+ const passage=PASSAGES[(Number(roomData.round||1)-1)%PASSAGES.length];
+ roomRef.update({status:"playing",passage,startedAt:firebase.database.ServerValue.TIMESTAMP});
+}
+function beginStudentRound(r){
+ if(roundFinished)return;
+ show('studentGame');$('passage').textContent=r.passage||"";
+ $('typingBox').disabled=true;
+ // Use Firebase server timestamp then allow a 2 second countdown buffer.
+ db.ref(".info/serverTimeOffset").once("value").then(s=>{
+   const offset=s.val()||0; localStart=(r.startedAt||Date.now())-offset+2000;
+   $('typingBox').disabled=true; runCountdown(localStart);
+ });
+}
+function runCountdown(start){
+ clearInterval(timerInt);
+ const box=$('typingBox');
+ let unlocked=false;
+ timerInt=setInterval(async()=>{
+   const left=Math.max(0,start-Date.now());
+   if(left>0){$('timer').textContent="START "+Math.ceil(left/1000);return}
+   if(!unlocked){unlocked=true;box.disabled=false;box.focus()}
+   const elapsed=Date.now()-start, remaining=Math.max(0,180000-elapsed);
+   $('timer').textContent=formatTime(remaining);
+   updateLive();
+   if(remaining<=0){clearInterval(timerInt);box.disabled=true;submitResult()}
+ },100);
+}
+function formatTime(ms){let s=Math.ceil(ms/1000);return String(Math.floor(s/60)).padStart(2,'0')+":"+String(s%60).padStart(2,'0')}
+$('typingBox').addEventListener('input',updateLive);
+function calculate(){
+ const typed=$('typingBox').value, target=$('passage').textContent;
+ let correct=0, errors=0;
+ for(let i=0;i<typed.length;i++){if(typed[i]===target[i])correct++;else errors++}
+ const words=correct/5; const mins=Math.max((Date.now()-localStart)/60000,0.01);
+ const wpm=Math.max(0,Math.round(words/mins)); const acc=typed.length?Math.max(0,Math.round(correct/typed.length*100)):100;
+ return {correct,errors,wpm,accuracy:acc};
+}
+function updateLive(){if(!$('typingBox').value)return;$('liveWpm').textContent=calculate().wpm;$('liveAcc').textContent=calculate().accuracy+"%"}
+async function submitResult(){
+ if(roundFinished)return; roundFinished=true;
+ const x=calculate();
+ await roomRef.child("players/"+playerId).update({...x,status:"finished",finishedAt:Date.now()});
+}
+function finishStudent(){clearInterval(timerInt);$('typingBox').disabled=true;show('studentDone')}
+function renderResults(players){
+ const arr=Object.values(players||{}).filter(p=>p.status==='finished').sort((a,b)=>(b.wpm-a.wpm)||(b.accuracy-a.accuracy));
+ if(!arr.length){$('results').innerHTML="<div class='notice'>Waiting for results…</div>";return}
+ $('results').innerHTML=`<table><tr><th>#</th><th>Name</th><th>WPM</th><th>Accuracy</th><th>Errors</th></tr>`+
+ arr.map((p,i)=>`<tr><td>${i+1}</td><td>${esc(p.name)}</td><td>${p.wpm}</td><td>${p.accuracy}%</td><td>${p.errors}</td></tr>`).join('')+"</table>";
+}
+function revealWinners(){
+ const arr=Object.values(roomData?.players||{}).filter(p=>p.status==='finished').sort((a,b)=>(b.wpm-a.wpm)||(b.accuracy-a.accuracy)).slice(0,3);
+ if(!arr.length)return;
+ $('winnerList').innerHTML=arr.map((p,i)=>`<div class="winner">${i===0?'🥇':i===1?'🥈':'🥉'} <b>${esc(p.name)}</b><br><span class="small">${p.wpm} WPM • ${p.accuracy}% accuracy</span></div>`).join('');
+ show('winner');
+ roomRef.update({status:"revealed"});
+}
+async function nextGroup(){
+ if(!roomRef)return;
+ const next=Number(roomData?.round||1)+1;
+ await roomRef.set({code:roomCode,status:"waiting",round:next,passage:"",startedAt:0,createdAt:roomData.createdAt||Date.now(),players:{}});
+ roundFinished=false;$('roundNo').textContent=next;$('results').innerHTML="Results will appear here after the timer reaches 00:00.";
+ show('admin'); listenRoom();
+}
+async function resetRoom(){
+ if(roomRef)await roomRef.remove();
+ roomCode="";roomData=null;$('adminCode').textContent="----";$('players').innerHTML="";
+ $('startBtn').disabled=true;$('revealBtn').disabled=true;msg('adminMsg','Room reset. Create a new room.');
+}
+function adminLogin(){
+ if($('adminPass').value==="admin123"){role='admin';show('admin');$('adminMsg').textContent="Admin mode ready. Create a room."; }
+ else alert("Wrong password.");
+}
+function loadVideo(e){
+ const f=e.target.files[0];if(!f)return;
+ $('introVideo').src=URL.createObjectURL(f);$('introVideo').classList.remove('hidden');$('videoEmpty').classList.add('hidden');$('playIntroBtn').disabled=false;
+}
+function playIntro(){const v=$('introVideo');v.play().catch(()=>{});}
+function copyRoom(){if(roomCode)navigator.clipboard?.writeText(roomCode)}
+</script>
+</body>
+</html>
