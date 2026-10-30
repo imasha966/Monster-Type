@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Monster Type</title>
+<style>
+:root{--navy:#11122e;--purple:#8b5cf6;--blue:#27c7ff;--green:#a3f43b;--white:#f7f7ff}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,Arial,sans-serif;background:radial-gradient(circle at top,#29205a,#11122e 65%);color:var(--white);min-height:100vh}
+.wrap{max-width:900px;margin:auto;padding:22px}.card{background:#201d45;border:1px solid #51468b;border-radius:22px;padding:22px;margin:16px 0;box-shadow:0 10px 30px #0004}
+h1{font-size:clamp(2rem,8vw,4rem);margin:8px 0;color:var(--green);text-align:center;text-shadow:0 4px #42316e}h2{color:var(--blue);margin-top:0}
+p{line-height:1.5}.muted{color:#c5c1e5}.row{display:flex;gap:10px;flex-wrap:wrap}input,textarea{width:100%;padding:14px;border-radius:12px;border:2px solid #6c5bb0;background:#11122e;color:white;font-size:1rem;margin:7px 0}
+button{border:0;border-radius:12px;padding:13px 18px;font-weight:800;font-size:1rem;cursor:pointer;background:var(--green);color:#16152e;margin:5px 3px}button.alt{background:var(--blue)}button.purple{background:var(--purple);color:white}button:disabled{opacity:.45;cursor:not-allowed}
+.hidden{display:none!important}.big{font-size:2rem;color:var(--green);font-weight:900}.passage{font-size:1.15rem;line-height:1.9;background:#11122e;padding:16px;border-radius:14px;border:1px solid #51468b}
+#typing{min-height:130px}.pill{display:inline-block;background:#39316a;padding:6px 12px;border-radius:20px;margin:3px}.monster{text-align:center;font-size:3.5rem}
+.notice{background:#3a2a19;border:1px solid #9c7735;padding:12px;border-radius:12px;color:#ffe2a0}
+ol{line-height:1.9}footer{text-align:center;color:#aaa5cf;padding:20px;font-size:.85rem}
+</style>
+</head>
+<body><main class="wrap">
+<div class="monster">👾 🧟‍♀️ 👻</div>
+<h1>MONSTER TYPE</h1>
+<p style="text-align:center" class="muted">The Monster Typing Challenge · Matara Technical College ICT 2026</p>
+<section id="home" class="card">
+<h2>🎮 Welcome, Typist!</h2>
+<p>Join a typing round with your room code, type the passage before time runs out, and see who becomes the Monster Typing Champion!</p>
+<div class="row"><button onclick="show('student')">PLAY NOW ⌨️</button><button class="purple" onclick="show('admin')">ADMIN</button></div>
+</section>
+<section id="student" class="card hidden">
+<h2>👋 Join the Monster Room</h2>
+<label>Your name</label><input id="playerName" maxlength="20" placeholder="Enter your name">
+<label>Room code</label><input id="joinCode" maxlength="8" placeholder="Ask the admin for the code">
+<button onclick="joinRoom()">JOIN ROOM</button><button class="alt" onclick="show('home')">BACK</button>
+<p id="joinMsg" class="muted"></p>
+</section>
+<section id="waiting" class="card hidden">
+<h2>⏳ You're in!</h2><p id="waitingText">Waiting for the admin to start the round...</p><div id="players"></div>
+</section>
+<section id="typingScreen" class="card hidden">
+<h2>⌨️ Type as fast and accurately as you can!</h2>
+<div class="row"><span class="pill">Time left: <b id="timer">03:00</b></span><span class="pill">Room: <b id="activeCode"></b></span></div>
+<p id="passage" class="passage"></p>
+<textarea id="typing" placeholder="Start typing here..." autocomplete="off" spellcheck="false"></textarea>
+<p id="liveStats" class="muted"></p><p id="typingMsg"></p>
+</section>
+<section id="admin" class="card hidden">
+<h2>🔐 Admin Control Room</h2>
+<label>Admin password</label><input id="adminPassword" type="password" placeholder="Enter admin password">
+<button onclick="adminLogin()">UNLOCK ADMIN</button><p id="adminMsg" class="muted"></p>
+</section>
+<section id="adminPanel" class="card hidden">
+<h2>👑 Admin Panel</h2>
+<p class="muted">Create a room, let up to 6 players join, then start the 3-minute challenge.</p>
+<button onclick="createRoom()">CREATE NEW ROOM</button>
+<p id="roomDisplay" class="big"></p><div id="adminPlayers"></div>
+<label>Typing passage (same for everyone)</label>
+<textarea id="passageInput" rows="5">The little monster opened the door and found a magical world. Bright stars danced in the sky, friendly creatures waved hello, and a new adventure was waiting. Every great typist starts with one word. Stay calm, focus on accuracy, and enjoy the challenge!</textarea>
+<div class="row"><button onclick="startRound()">START 3-MINUTE ROUND</button><button class="alt" onclick="showResults()">VIEW RESULTS</button><button class="purple" onclick="newGroup()">NEXT GROUP</button></div>
+<div id="adminStatus" class="muted"></div><div id="results"></div>
+</section>
+<section id="done" class="card hidden"><h2>🏁 Round finished!</h2><p id="doneText"></p><button onclick="show('home')">RETURN TO HOTEL</button></section>
+<div class="notice">If the room cannot connect, the Firebase Realtime Database rules may need to be updated. Ask the app owner/admin to configure them.</div>
+<footer>MONSTER TYPE · Matara Technical College · ICT 2026 2nd Batch</footer>
+</main>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script>
+const firebaseConfig={
+ apiKey:"AIzaSyBAVChly9Rpmo_WEoni_3srEbReJ97Q4",
+ authDomain:"typing-app-7f51a.firebaseapp.com",
+ databaseURL:"https://typing-app-7f51a-default-rtdb.firebaseio.com",
+ projectId:"typing-app-7f51a",
+ storageBucket:"typing-app-7f51a.firebasestorage.app",
+ messagingSenderId:"880287958242",
+ appId:"1:880287958242:web:4f170cddf1f94f9b920abb",
+ measurementId:"G-GV9TN2TSCD"
+};
+let db=null,uid=null,currentCode="",isAdmin=false,roomRef=null,roomData=null,timerHandle=null,startedAt=0,localFinished=false;
+const ADMIN_PASSWORD="admin123"; // Change this before the public event.
+const $=id=>document.getElementById(id);
+function show(id){["home","student","waiting","typingScreen","admin","adminPanel","done"].forEach(x=>$(x).classList.add("hidden"));$(id).classList.remove("hidden")}
+function initFirebase(){
+ try{if(!firebase.apps.length)firebase.initializeApp(firebaseConfig);db=firebase.database();firebase.auth().signInAnonymously().then(c=>uid=c.user.uid).catch(e=>console.error(e));}
+ catch(e){console.error(e);alert("Firebase could not start. Check your internet connection.");}
+}
+initFirebase();
+function makeCode(){return Math.random().toString(36).slice(2,6).toUpperCase()}
+function adminLogin(){if($("adminPassword").value===ADMIN_PASSWORD){isAdmin=true;show("adminPanel");$("adminMsg").textContent="";}else $("adminMsg").textContent="Incorrect password."}
+async function createRoom(){
+ if(!db||!uid){$("adminStatus").textContent="Connecting to Firebase... please wait and try again.";return}
+ const code=makeCode();currentCode=code;roomRef=db.ref("rooms/"+code);
+ const data={status:"waiting",createdAt:Date.now(),admin:uid,passage:"",players:{},results:{}};
+ try{await roomRef.set(data);$("roomDisplay").textContent="ROOM CODE: "+code;$("adminStatus").textContent="Share this code with up to 6 players." ;listenRoom();}
+ catch(e){$("adminStatus").textContent="Could not create room: "+e.message+" (Firebase rules may need updating)."}
+}
+async function joinRoom(){
+ const name=$("playerName").value.trim(),code=$("joinCode").value.trim().toUpperCase();
+ if(!name||!code){$("joinMsg").textContent="Enter your name and room code.";return}
+ if(!db||!uid){$("joinMsg").textContent="Connecting... try again in a moment.";return}
+ const ref=db.ref("rooms/"+code);
+ try{
+  const snap=await ref.get();if(!snap.exists()){ $("joinMsg").textContent="Room not found. Check the code.";return}
+  const room=snap.val();if(room.status!=="waiting"){$("joinMsg").textContent="This round has already started.";return}
+  const count=Object.keys(room.players||{}).length;if(count>=6){$("joinMsg").textContent="This room is full (6 players).";return}
+  currentCode=code;roomRef=ref;await ref.child("players/"+uid).set({name,joinedAt:Date.now(),finished:false});
+  $("waitingText").textContent="Welcome, "+name+"! Waiting for the admin to start.";
+  $("activeCode").textContent=code;show("waiting");listenRoom();
+ }catch(e){$("joinMsg").textContent="Could not join: "+e.message+" (Firebase rules may need updating)."}
+}
+function listenRoom(){
+ if(!roomRef)return;roomRef.off();roomRef.on("value",snap=>{
+  if(!snap.exists())return;roomData=snap.val();renderPlayers();
+  if(!isAdmin&&roomData.status==="running"&&!localFinished)beginStudentRound();
+  if(!isAdmin&&roomData.status==="finished")finishStudent();
+ });
+}
+function renderPlayers(){
+ const ps=roomData?.players||{},names=Object.values(ps).map(p=>"👾 "+p.name);
+ $("players").innerHTML="<p><b>Players joined:</b></p>"+(names.map(n=>'<span class="pill">'+escapeHtml(n)+'</span>').join("")||"No players yet");
+ $("adminPlayers").innerHTML="<p><b>"+names.length+"/6 players:</b></p>"+(names.map(n=>'<span class="pill">'+escapeHtml(n)+'</span>').join("")||"No players yet");
+}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+async function startRound(){
+ if(!currentCode||!roomRef){$("adminStatus").textContent="Create a room first.";return}
+ const ps=roomData?.players||{};if(!Object.keys(ps).length){$("adminStatus").textContent="Wait for at least one player to join.";return}
+ const passage=$("passageInput").value.trim();if(!passage){$("adminStatus").textContent="Enter a passage first.";return}
+ try{await roomRef.update({status:"running",passage,startedAt:Date.now(),duration:180,results:{}});$("adminStatus").textContent="Round started!";}catch(e){$("adminStatus").textContent="Start failed: "+e.message}
+}
+function beginStudentRound(){
+ localFinished=false;startedAt=roomData.startedAt||Date.now();$("passage").textContent=roomData.passage||"";$("typing").value="";$("typing").disabled=false;$("typingMsg").textContent="";show("typingScreen");$("typing").focus();runTimer();$("typing").oninput=updateStats;
+}
+function runTimer(){
+ clearInterval(timerHandle);const tick=()=>{const left=Math.max(0,180-Math.floor((Date.now()-startedAt)/1000));$("timer").textContent=String(Math.floor(left/60)).padStart(2,"0")+":"+String(left%60).padStart(2,"0");if(left<=0){clearInterval(timerHandle);submitScore(true)}};tick();timerHandle=setInterval(tick,250);
+}
+function updateStats(){
+ const typed=$("typing").value,pass=$("passage").textContent;let correct=0;for(let i=0;i<Math.min(typed.length,pass.length);i++)if(typed[i]===pass[i])correct++;
+ const mins=Math.max((Date.now()-startedAt)/60000,1/60),wpm=Math.round((typed.trim().length/5)/mins),accuracy=typed.length?Math.round(correct/typed.length*100):100;
+ $("liveStats").textContent="Approx. WPM: "+wpm+" · Accuracy: "+accuracy+"%";
+ if(typed.length>=pass.length)submitScore(false);
+}
+async function submitScore(timeUp){
+ if(localFinished)return;localFinished=true;$("typing").disabled=true;clearInterval(timerHandle);
+ const typed=$("typing").value,pass=$("passage").textContent;let correct=0;for(let i=0;i<Math.min(typed.length,pass.length);i++)if(typed[i]===pass[i])correct++;
+ const mins=Math.max((Date.now()-startedAt)/60000,1/60),wpm=Math.round((typed.trim().length/5)/mins),accuracy=typed.length?Math.round(correct/typed.length*100):0;
+ try{await roomRef.child("results/"+uid).set({wpm,accuracy,correctChars:correct,totalChars:typed.length,finishedAt:Date.now()});}catch(e){console.error(e)}
+ $("doneText").textContent="Your result: "+wpm+" WPM · "+accuracy+"% accuracy. "+(timeUp?"Time is up!":"Well done!");
+ show("done");
+}
+function finishStudent(){if(!localFinished){$("typing").disabled=true;clearInterval(timerHandle);$("doneText").textContent="The admin has ended the round.";show("done")}}
+async function showResults(){
+ if(!roomRef||!roomData){$("results").textContent="No room yet.";return}
+ const ps=roomData.players||{},rs=roomData.results||{};
+ const rows=Object.entries(rs).map(([id,r])=>({name:ps[id]?.name||"Player",...r})).sort((a,b)=>b.wpm-a.wpm||b.accuracy-a.accuracy);
+ $("results").innerHTML="<h3>🏆 Results</h3>"+(rows.length?rows.map((r,i)=>`<p>${i+1}. <b>${escapeHtml(r.name)}</b> — ${r.wpm} WPM · ${r.accuracy}% accuracy</p>`).join(""):"No results submitted yet.");
+}
+async function newGroup(){if(!roomRef)return;try{await roomRef.update({status:"waiting",players:{},results:{},passage:"",startedAt:null});$("results").innerHTML="";$("adminStatus").textContent="Ready for the next group. Share the same room code.";listenRoom();}catch(e){$("adminStatus").textContent=e.message}}
+</script></body></html>
